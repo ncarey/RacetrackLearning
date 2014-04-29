@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.lang.Math;
 
+import edu.jhu.zpalmer2.spring2009.ai.hw6.data.Terrain;
 import edu.jhu.zpalmer2.spring2009.ai.hw6.data.Action;
 import edu.jhu.zpalmer2.spring2009.ai.hw6.data.State;
 import edu.jhu.zpalmer2.spring2009.ai.hw6.data.WorldMap;
@@ -18,6 +20,7 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 	
 	/** A mapping between states in that world and their expected values. */
 	private Map<State, Double> expectedValues;
+	private Map<State, Double> expectedValuesPrime;
 	
 	/** The world in which this agent is operating. */
 	private WorldMap world;	
@@ -29,7 +32,9 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 	private RewardFunction rewardFunction;
 	/** The convergence tolerance (epsilon). */
 	private double convergenceTolerance;
-	
+	/** housekeeping variable for initialization */
+	private boolean isInit;
+
 	/**
 	 * Creates a new value iterating agent.
 	 * @param world The world in which the agent will learn.
@@ -37,12 +42,14 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 	public ValueIteratingAgent()
 	{
 		this.expectedValues = new DefaultValueHashMap<State, Double>(0.0);
+		this.expectedValuesPrime = new DefaultValueHashMap<State, Double>(0.0);
 		
 		this.world = null;
 		this.discountFactor = 0.5;
 		this.transitionFunction = null;
 		this.rewardFunction = null;
 		this.convergenceTolerance = 0.000000001;
+		this.isInit = false;
 	}
 
 	@Override
@@ -51,6 +58,30 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 		return new ValuePolicy();
 	}
 
+	private boolean initExpectedValues(){
+		int x = world.getSize().getFirst().intValue();
+		int y = world.getSize().getSecond().intValue();
+		for(int i = 0; i < x; i++){
+			for(int j = 0; j < y; j++){
+
+				Pair<Integer, Integer> location = 
+					new Pair<Integer, Integer>(new Integer(i), new Integer(j));
+				Terrain curTer = world.getTerrain(location);
+
+				//now that we have a map location, list all possible velocities to get all states
+				for(int dx = -5; dx <=5; dx++){
+					for(dy = -5; dy <= 5; dy++){
+
+						Pair<Integer, Integer> velocity = 
+							new Pair<Integer, Integer>(new Integer(dx), new Integer(dy));
+						State curState = new State(position, velocity);
+						expectedValuesPrime.put(curState, new Double(0.0));
+					}
+				}
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Iterate performs a single update of the estimated utilities of each
@@ -60,8 +91,48 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 	@Override
 	public boolean iterate()
 	{
-		// TODO: implement value iteration; this is basically the inside of the
-		// while(!done) loop.
+		//initialize expectedValuesPrime with all possible states
+		if(isInit == false){
+			this.isInit = this.initExpectedValues();
+		}
+
+		double maxChange = 0.0;
+		expectedValues = expectedValuesPrime;
+
+		//iterate through all states
+		for(Map.Entry<State, Double> entry : expectedValuesPrime.entrySet()) {
+			State curState = entry.getKey();
+			Double reward = rewardFunction.reward(curState);
+			//iterate through all possible actions, find max
+			Double maxAction = Double.NEGATIVE_INFINITY;
+			for(Action action : Action.LEGAL_ACTIONS) {
+				//iterate through all possible states resulting from action
+				Double sum = new Double(0.0);
+				for(Pair<State, Double> sPrime : transitionFunction.transition(curState, action)) {
+					sum += (sPrime.getSecond() * expectedValues.get(sPrime.getFirst()));
+				}
+				if(sum >= maxAction){
+					maxAction = new Double(sum.doubleValue());
+				}
+			}
+			//maxAction found, update expectedValuesPrime
+			expectedValuesPrime.put(curState, new Double(reward + (discountFactor * maxAction)));
+			
+			//update maxChange
+			double change = Math.abs(expectedValuesPrime.get(curState) - expectedValues.get(curState));
+			if(change > maxChange){
+				maxChange = change;
+			}
+
+		}
+
+
+		//check convergence criterion
+		if(maxChange < (convergenceTolerance * ((1 - discountFactor) / discountFactor))){
+			return true;
+		}else{
+			return false;
+		}		
 	}
 
 	public ValueIteratingAgent duplicate()
@@ -140,9 +211,28 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 		 */
 		public Action decide(State state)
 		{
-			// TODO: this function should return an appropriate action based on
+			// this function should return an appropriate action based on
 			// an exploration policy and the current estimate of expected
 			// future reward. 
+
+			//iterate through all possible actions, find max
+			Double maxAction = Double.NEGATIVE_INFINITY;
+			Action maxA = null;
+			for(Action action : Action.LEGAL_ACTIONS) {
+				//iterate through all possible states resulting from action
+				Double sum = new Double(0.0);
+				for(Pair<State, Double> sPrime : transitionFunction.transition(curState, action)) {
+					sum += (sPrime.getSecond() * expectedValues.get(sPrime.getFirst()));
+				}
+				if(sum >= maxAction){
+					maxAction = new Double(sum.doubleValue());
+					maxA = action;
+				}
+			}
+			if(maxA == null){
+				System.out.println("Action is null???");
+			}
+			return maxA;
 		}
 	}
 }
