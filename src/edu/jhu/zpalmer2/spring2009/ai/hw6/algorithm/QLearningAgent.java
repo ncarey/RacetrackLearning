@@ -75,6 +75,7 @@ public class QLearningAgent implements SimulationBasedReinforcementLearningAgent
 	public boolean iterate()
 	{
 		// TODO: this function should call the simulator to perform a sample run
+		return true;
 	}
 	
 	@Override
@@ -170,7 +171,7 @@ public class QLearningAgent implements SimulationBasedReinforcementLearningAgent
 			// TODO: this function should return an appropriate action based on
 			// an exploration policy and the current estimate of expected
 			// future reward. 
-			
+			return null;	
 		}
 	}
 
