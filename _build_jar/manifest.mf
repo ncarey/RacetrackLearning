@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: edu.jhu.zpalmer2.spring2009.ai.hw6.ReinforcementLearningMain

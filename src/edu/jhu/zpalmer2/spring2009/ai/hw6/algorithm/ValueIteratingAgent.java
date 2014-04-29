@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.HashSet;
 import java.lang.Math;
 
 import edu.jhu.zpalmer2.spring2009.ai.hw6.data.Terrain;
@@ -21,7 +22,10 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 	/** A mapping between states in that world and their expected values. */
 	private Map<State, Double> expectedValues;
 	private Map<State, Double> expectedValuesPrime;
-	
+
+	/** A set of all possible states */
+	private Set<State> stateSet;	
+
 	/** The world in which this agent is operating. */
 	private WorldMap world;	
 	/** The discount factor for this agent. */
@@ -43,7 +47,7 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 	{
 		this.expectedValues = new DefaultValueHashMap<State, Double>(0.0);
 		this.expectedValuesPrime = new DefaultValueHashMap<State, Double>(0.0);
-		
+		this.stateSet = new HashSet<State>();
 		this.world = null;
 		this.discountFactor = 0.5;
 		this.transitionFunction = null;
@@ -58,7 +62,8 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 		return new ValuePolicy();
 	}
 
-	private boolean initExpectedValues(){
+	private boolean initStateSet(){
+		stateSet.clear();
 		int x = world.getSize().getFirst().intValue();
 		int y = world.getSize().getSecond().intValue();
 		for(int i = 0; i < x; i++){
@@ -75,7 +80,7 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 						Pair<Integer, Integer> velocity = 
 							new Pair<Integer, Integer>(new Integer(dx), new Integer(dy));
 						State curState = new State(location, velocity);
-						expectedValuesPrime.put(curState, new Double(0.0));
+						stateSet.add(curState);
 					}
 				}
 			}
@@ -92,16 +97,19 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 	public boolean iterate()
 	{
 		//initialize expectedValuesPrime with all possible states
-		if(isInit == false){
-			this.isInit = this.initExpectedValues();
+		if(this.isInit == false){
+			this.isInit = this.initStateSet();
 		}
 
 		double maxChange = 0.0;
-		expectedValues = expectedValuesPrime;
+		expectedValues.clear();
+		expectedValues.putAll(expectedValuesPrime);
+
+		//System.out.println("There are " + expectedValuesPrime.entrySet().size() + " states");
 
 		//iterate through all states
-		for(Map.Entry<State, Double> entry : expectedValuesPrime.entrySet()) {
-			State curState = entry.getKey();
+		for(State curState : stateSet) {
+			
 			Double reward = rewardFunction.reward(curState);
 			//iterate through all possible actions, find max
 			Double maxAction = Double.NEGATIVE_INFINITY;
@@ -144,6 +152,8 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 		ret.setTransitionFunction(this.transitionFunction);
 		ret.setWorld(this.world);
 		ret.expectedValues.putAll(this.expectedValues);
+		ret.expectedValuesPrime.putAll(this.expectedValuesPrime);
+		ret.stateSet.addAll(this.stateSet);
 		return ret;
 	}
 	

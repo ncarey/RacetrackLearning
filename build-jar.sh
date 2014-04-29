@@ -8,6 +8,6 @@ Manifest-Version: 1.0
 Main-Class: edu.jhu.zpalmer2.spring2009.ai.hw6.ReinforcementLearningMain
 _EOF
 mkdir $tmpdir/classes
-javac -target 1.5 -sourcepath src -d $tmpdir/classes $(find src -name '*.java')
+javac -target 1.7 -sourcepath src -d $tmpdir/classes $(find src -name '*.java')
 jar cfm ReinforcementLearning.jar $tmpdir/manifest.mf -C $tmpdir/classes .
 rm -rf $tmpdir
