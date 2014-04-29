@@ -70,11 +70,11 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 
 				//now that we have a map location, list all possible velocities to get all states
 				for(int dx = -5; dx <=5; dx++){
-					for(dy = -5; dy <= 5; dy++){
+					for(int dy = -5; dy <= 5; dy++){
 
 						Pair<Integer, Integer> velocity = 
 							new Pair<Integer, Integer>(new Integer(dx), new Integer(dy));
-						State curState = new State(position, velocity);
+						State curState = new State(location, velocity);
 						expectedValuesPrime.put(curState, new Double(0.0));
 					}
 				}
@@ -221,7 +221,7 @@ public class ValueIteratingAgent implements ReinforcementLearningAgent
 			for(Action action : Action.LEGAL_ACTIONS) {
 				//iterate through all possible states resulting from action
 				Double sum = new Double(0.0);
-				for(Pair<State, Double> sPrime : transitionFunction.transition(curState, action)) {
+				for(Pair<State, Double> sPrime : transitionFunction.transition(state, action)) {
 					sum += (sPrime.getSecond() * expectedValues.get(sPrime.getFirst()));
 				}
 				if(sum >= maxAction){
