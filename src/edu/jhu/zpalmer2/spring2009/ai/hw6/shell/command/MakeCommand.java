@@ -2,6 +2,7 @@ package edu.jhu.zpalmer2.spring2009.ai.hw6.shell.command;
 
 import edu.jhu.zpalmer2.spring2009.ai.hw6.algorithm.MetricTrackingAgent;
 import edu.jhu.zpalmer2.spring2009.ai.hw6.algorithm.QLearningAgent;
+import edu.jhu.zpalmer2.spring2009.ai.hw6.algorithm.QLearningFunctionApproximationAgent;
 import edu.jhu.zpalmer2.spring2009.ai.hw6.algorithm.ReinforcementLearningAgent;
 import edu.jhu.zpalmer2.spring2009.ai.hw6.algorithm.StepCostRewardFunction;
 import edu.jhu.zpalmer2.spring2009.ai.hw6.algorithm.TerrainBasedTransitionFunction;
@@ -42,6 +43,15 @@ public class MakeCommand extends Command
 			agent.setDiscountFactor(shell.getEnvironment().getGamma());
 			agent.setMinimumExplorationCount(shell.getEnvironment().getMinExplorations());
 			learningAgent = agent;
+		} else if (agentType.equals("fa"))
+		{
+			QLearningFunctionApproximationAgent agent = new QLearningFunctionApproximationAgent();
+			agent.setLearningFactor(shell.getEnvironment().getAlpha());
+			agent.setConvergenceTolerance(shell.getEnvironment().getEpsilon());
+			agent.setDiscountFactor(shell.getEnvironment().getGamma());
+			agent.setMinimumExplorationCount(shell.getEnvironment().getMinExplorations());
+			learningAgent = agent;
+
 		} else
 		{
 			throw new CommandFailureException("Unrecognized agent type: " + agentType);

@@ -20,7 +20,7 @@ import edu.jhu.zpalmer2.spring2009.ai.hw6.util.Pair;
  * 
  * @author Zachary Palmer
  */
-public class QLearningAgent implements SimulationBasedReinforcementLearningAgent
+public class QLearningFunctionApproximationAgent implements SimulationBasedReinforcementLearningAgent
 {
 	private static final long serialVersionUID = 1L;
 
@@ -50,7 +50,7 @@ public class QLearningAgent implements SimulationBasedReinforcementLearningAgent
 	/**
 	 * General constructor.
 	 */
-	public QLearningAgent()
+	public QLearningFunctionApproximationAgent()
 	{
 		this.minimumExplorationCount = 1;
 		this.discountFactor = 0.99;
@@ -102,9 +102,9 @@ public class QLearningAgent implements SimulationBasedReinforcementLearningAgent
 	}
 
 	@Override
-	public QLearningAgent duplicate()
+	public QLearningFunctionApproximationAgent duplicate()
 	{
-		QLearningAgent ret = new QLearningAgent();
+		QLearningFunctionApproximationAgent ret = new QLearningFunctionApproximationAgent();
 		ret.setConvergenceTolerance(this.convergenceTolerance);
 		ret.setDiscountFactor(this.discountFactor);
 		ret.setLearningFactor(this.learningFactor);
